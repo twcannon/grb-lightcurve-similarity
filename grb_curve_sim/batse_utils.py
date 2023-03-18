@@ -7,30 +7,74 @@ import numpy as np
 import sys
 
 
+def fit_background(data, time):
+    poly_coefs = list(np.polyfit(x=data['trig_time'], y=data['sum_chan'], deg=2))[::-1]
+    background = 0
+    for i in range(len(poly_coefs)):
+        background += poly_coefs[i] * time ** i
+    return background
+    # MESSED UP BGS
+    # 512
+    # 526
+    # 547
+    # 878
+    # 927
+    # 1025
+    # 1076
+    # 1384
+    # 1419
+    # 1439
+    # 1452
+    # 1461
+    # 1661
+    # 1680
+    # 1687
+    # 1953
+
+
 def calc_64ms_background(file_path, duration):
     if '64ms' not in file_path:
         print(f'file {file_path} is not a 64 ms file')
         return None
 
     grb = BATSEBurst(file_path, time_signature='64ms')
-    grb.parse_file()
+
+    if not grb.parse_file():
+        print(f'file {file_path} does not exist')
+        return None
 
     burst_data = grb.chan_data
     burst_meta_data = grb.meta_data
+
+    burst_data = burst_data[(burst_data.sum_chan != 0) | (burst_data.chan1 != 0) | (burst_data.chan2 != 0) |
+                            (burst_data.chan3 != 0) | (burst_data.chan4 != 0)]
+
+    t90 = float(duration['t90'])
     t90_start = float(duration['t90_start'])
-    t90_end = float(t90_start+duration['t90'])
+    t90_end = float(t90_start+t90)
     t90e = float(duration['t90e'])
+    min_data_time = burst_data['trig_time'].min()
+    max_data_time = burst_data['trig_time'].max()
+    min_window = (((t90_start - t90e) - min_data_time) / 2) + min_data_time
+    max_window = ((max_data_time - (t90_end + t90e)) / 2) + (t90_end + t90e)
 
     print(burst_data)
     print(burst_meta_data)
     print(duration)
+    print(min_window)
+    print(max_window)
 
-    burst_data = burst_data.loc[(burst_data['trig_time'] > t90_end + t90e) |
-                                (burst_data['trig_time'] < t90_start - t90e)]
+    trimmed_data = burst_data.copy().loc[(burst_data['trig_time'] < min_window) |
+                                         (burst_data['trig_time'] > max_window)]
+    print(trimmed_data)
 
-    plt.plot(burst_data['trig_time'], burst_data['sum_chan'])
-    plt.axvline(x=t90_start, color='b')
-    plt.axvline(x=t90_end, color='b')
+    burst_data['background'] = fit_background(data=trimmed_data, time=burst_data['trig_time'])
+
+    plt.plot(burst_data['trig_time'], burst_data['sum_chan'], c='b')
+    plt.scatter(trimmed_data['trig_time'], trimmed_data['sum_chan'], c='r', marker='.')
+    plt.plot(burst_data['trig_time'], burst_data['background'], c='k')
+    plt.axvline(x=t90_start, color='g')
+    plt.axvline(x=t90_end, color='g')
     plt.show()
 
 #

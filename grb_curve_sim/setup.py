@@ -78,10 +78,10 @@ def run_setup(experiment, data_dir, background_file):
         print(f'Building BATSE background file from {batse_duration_local_file}')
         durations = BATSEDurations(file_path=batse_duration_local_file)
         durations.parse_file()
-        print(durations.dur_data)
         for burst in durations.dur_data['trig_num'].unique():
-            calc_64ms_background(file_path=os.path.join(batse_local_64ms_dir, f'cat64ms.{str(burst).zfill(5)}'),
-                                 duration=durations.dur_data.loc[durations.dur_data['trig_num'] == burst])
+            if int(burst) > 2000:
+                calc_64ms_background(file_path=os.path.join(batse_local_64ms_dir, f'cat64ms.{str(burst).zfill(5)}'),
+                                     duration=durations.dur_data.loc[durations.dur_data['trig_num'] == burst])
             # sys.exit()
 
     with open('grb_curve_sim.conf', 'w') as configfile:
