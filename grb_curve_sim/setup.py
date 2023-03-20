@@ -79,7 +79,7 @@ def run_setup(experiment, data_dir, background_file):
         durations = BATSEDurations(file_path=batse_duration_local_file)
         durations.parse_file()
         for burst in durations.dur_data['trig_num'].unique():
-            if int(burst) > 2000:
+            if int(burst) > 3115:
                 calc_64ms_background(file_path=os.path.join(batse_local_64ms_dir, f'cat64ms.{str(burst).zfill(5)}'),
                                      duration=durations.dur_data.loc[durations.dur_data['trig_num'] == burst])
             # sys.exit()
