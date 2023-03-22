@@ -1,0 +1,81 @@
+burst_num, exclusion, note
+503, ?, background contains magnetospheric interference. fit area local to emission episode
+547, ?, poly function does not fit entire background well. fit only area local to emission episode
+568, ?, poly function does not fit entire background well. fit only area local to emission episode
+575, ?, poly function does not fit entire background well. fit only area local to emission episode
+678, ?, poly function does not fit entire background well. fit only area local to emission episode
+753, ?, particle event disrputs background. fit area local to emission episode
+773, ?, poly function does not fit entire background well. fit only area local to emission episode
+803, ?, poly function does not fit entire background well. fit only area local to emission episode
+830, ?, poly function does not fit entire background well. fit only area local to emission episode
+878, ?, background interference from Cyg X-1. fit area local to emission episode
+1025, ?, background interference from SAA exit. fit area local to emission episode
+1076, ?, particle event disrputs background. fit area local to emission episode
+1088, ?, poly function does not fit entire background well. fit only area local to emission episode
+1192, ?, poly function does not fit entire background well. fit only area local to emission episode
+1235, ?, poly function does not fit entire background well. fit only area local to emission episode
+1244, ?, particle event and solar flare disrput background. fit area local to emission episode
+1384, ?, background interference from SAA exit. fit area local to emission episode
+1404, ?, occultation step. fit area local to emission episode
+1419, ?, background interference from SAA exit. fit area local to emission episode
+1439, ?, occultation step. fit area local to emission episode
+1452, ?, particle event disrputs background. fit area local to emission episode
+1461, ?, poly function does not fit entire background well. fit only area local to emission episode
+1609, ?, poly function does not fit entire background well. fit only area local to emission episode
+1655, ?, background contains magnetospheric interference. fit area local to emission episode
+1687, ?, poly function does not fit entire background well. fit only area local to emission episode
+1953, ?, poly function does not fit entire background well. fit only area local to emission episode
+2099, ?, occultation step. fit area local to emission episode
+2114, ?, background contains magnetospheric interference. fit area local to emission episode
+2143, ?, occultation step. fit area local to emission episode
+2151, ?, background difficult to fit with poly function. fit area local to emission episode
+2156, ?, background contains magnetospheric interference. fit area local to emission episode
+2161, ?, poly function does not fit entire background well. fit only area local to emission episode
+2167, ?, poly function does not fit entire background well. fit only area local to emission episode
+2189, ?, poly function does not fit entire background well. fit only area local to emission episode
+2197, ?, occultation step. fit area local to emission episode
+2213, ?, solar flare. fit area local to emission episode
+2311, ?, particle event disrputs background. fit area local to emission episode
+2321, ?, poly function does not fit entire background well. fit only area local to emission episode
+2344, ?, background contains data gap. fit area local to emission episode
+2365, ?, poly function does not fit entire background well. fit only area local to emission episode
+2377, ?, poly function does not fit entire background well. fit only area local to emission episode
+2380, ?, occultation step. fit area local to emission episode
+2382, ?, background contains data gap. fit area local to emission episode
+2412, ?, background contains data gap. fit area local to emission episode
+2424, ?, occultation step. fit area local to emission episode
+2440, ?, poly function does not fit entire background well. fit only area local to emission episode
+2500, ?, occultation step. fit area local to emission episode
+2502, ?, occultation step. fit area local to emission episode
+2515, ?, background contains data gap. fit area local to emission episode
+2589, ?, occultation step. fit area local to emission episode
+2633, ?, occultation step. fit area local to emission episode
+2634, ?, background contains magnetospheric interference. fit area local to emission episode
+2663, ?, occultation step. fit area local to emission episode
+2680, ?, phosphorescence spike. fit area local to emission episode
+2681, ?, particle event disrputs background. fit area local to emission episode
+2695, ?, background contains magnetospheric interference. fit area local to emission episode
+2715, ?, background contains data gap. fit area local to emission episode
+2728, ?, poly function does not fit entire background well. fit only area local to emission episode
+2736, ?, poly function does not fit entire background well. fit only area local to emission episode
+2750, ?, poly function does not fit entire background well. fit only area local to emission episode
+2755, ?, poly function does not fit entire background well. fit only area local to emission episode
+2825, ?, background contains magnetospheric interference. fit area local to emission episode
+2834, ?, occultation step. fit area local to emission episode
+2843, ?, occultation step. fit area local to emission episode
+2849, ?, background modulation by A0535+262. fit area local to emission episode
+2851, ?, occultation step. fit area local to emission episode
+2836, ?, poly function does not fit entire background well. fit only area local to emission episode
+2877, ?, particle event disrputs background. fit area local to emission episode
+2879, ?, occultation step. fit only area local to emission episode
+2880, ?, occultation step. fit only area local to emission episode
+2893, ?, occultation step. fit only area local to emission episode
+2917, ?, background contains magnetospheric interference. fit area local to emission episode
+2922, ?, background contains magnetospheric interference. fit area local to emission episode
+2927, ?, background contains data gap. fit area local to emission episode
+2984, ?, occultation step. fit only area local to emission episode
+2986, ?, occultation step. fit only area local to emission episode
+2994, ?, background modulation. fit area local to emission episode
+2995, ?, occultation step. fit only area local to emission episode
+
+

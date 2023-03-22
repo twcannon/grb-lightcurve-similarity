@@ -21,10 +21,14 @@ def fit_background(data, time):
                          8004, 8008, 8039, 8079, 8086, 8105, 8116, 8121]
     for i in range(len(poly_coefs)):
         background += poly_coefs[i] * time ** i
-    return background
+    return background, poly_coefs[0], poly_coefs[1], poly_coefs[2]
 
 
-def calc_64ms_background(file_path, duration):
+def calc_64ms_background(file_path, trig_num, duration=None, init_params=None, auto_save=False):
+    if init_params is None and duration is None:
+        print(f'must either specify init_params or duration')
+        return None
+
     if '64ms' not in file_path:
         print(f'file {file_path} is not a 64 ms file')
         return None
@@ -37,160 +41,73 @@ def calc_64ms_background(file_path, duration):
 
     burst_data = grb.chan_data
     burst_meta_data = grb.meta_data
-
     burst_data = burst_data[(burst_data.sum_chan != 0) | (burst_data.chan1 != 0) | (burst_data.chan2 != 0) |
                             (burst_data.chan3 != 0) | (burst_data.chan4 != 0)]
 
-    t90 = float(duration['t90'])
-    t90_start = float(duration['t90_start'])
-    t90_end = float(t90_start+t90)
-    t90e = float(duration['t90e'])
-    min_data_time = burst_data['trig_time'].min()
-    max_data_time = burst_data['trig_time'].max()
-    min_window = (((t90_start - t90e) - min_data_time) / 2) + min_data_time
-    max_window = ((max_data_time - (t90_end + t90e)) / 2) + (t90_end + t90e)
+    if init_params is None:
+        t90 = float(duration['t90'])
+        t90_start = float(duration['t90_start'])
+        t90_end = float(t90_start+t90)
+        t90e = float(duration['t90e'])
+        window_params = {
+            'start_min_win': burst_data['trig_time'].min(),
+            'start_max_win': (((t90_start - t90e) - burst_data['trig_time'].min()) / 2) + burst_data['trig_time'].min(),
+            'end_min_win': ((burst_data['trig_time'].max() - (t90_end + t90e)) / 2) + (t90_end + t90e),
+            'end_max_win': burst_data['trig_time'].max(),
+        }
+    else:
+        window_params = init_params
 
-    print(burst_data)
-    print(burst_meta_data)
-    print(duration)
-    print(min_window)
-    print(max_window)
+    while True:
+        print(f'burst_data {burst_data}')
+        print(f'burst_meta_data {burst_meta_data}')
+        print(f'duration {duration}')
+        print(f'start_max_window {window_params["start_max_win"]}')
+        print(f'end_min_window {window_params["end_min_win"]}')
 
-    trimmed_data = burst_data.copy().loc[(burst_data['trig_time'] < min_window) |
-                                         (burst_data['trig_time'] > max_window)]
-    print(trimmed_data)
+        trimmed_data = burst_data.copy().loc[((burst_data['trig_time'] < window_params['start_max_win']) &
+                                              (burst_data['trig_time'] > window_params['start_min_win'])) |
+                                             ((burst_data['trig_time'] > window_params['end_min_win']) &
+                                              (burst_data['trig_time'] < window_params['end_max_win']))]
 
-    burst_data['background'] = fit_background(data=trimmed_data, time=burst_data['trig_time'])
+        background_mean = np.mean(trimmed_data)
+        peak_flux = np.max(burst_data)
+        signal_to_noise = (peak_flux - background_mean) / np.sqrt(peak_flux)
 
-    plt.plot(burst_data['trig_time'], burst_data['sum_chan'], c='b')
-    plt.scatter(trimmed_data['trig_time'], trimmed_data['sum_chan'], c='r', marker='.')
-    plt.plot(burst_data['trig_time'], burst_data['background'], c='k')
-    plt.axvline(x=t90_start, color='g')
-    plt.axvline(x=t90_end, color='g')
-    plt.show()
+        print(f' {background_mean}')
+        print(f'peak_flux {peak_flux}')
+        print(f'signal_to_noise {signal_to_noise}')
+        print(f'trimmed_data {trimmed_data}')
 
-#
-# def fix_background(burst_data, time, time_start, time_end, add_time):
-#     try:
-#         burst_data = burst_data[((time > (time_start - add_time * 2)) & (time < time_start)) | (
-#                     (time > time_end) & (time < (time_end + add_time * 2)))]
-#     except:
-#         burst_data = burst_data[((time > min(time)) & (time < time_start)) | ((time > time_end) & (time < max(time)))]
-#     try:
-#         time = time[((time > (time_start - add_time * 2)) & (time < time_start)) | (
-#                     (time > time_end) & (time < (time_end + add_time * 2)))]
-#     except:
-#         time = time[((time > min(time)) & (time < time_start)) | ((time > time_end) & (time < max(time)))]
-#     time_fixed = time
-#     burst_fixed = burst_data
-#     return burst_fixed, time_fixed
-#
-#
-# add_time_mult = 1
-#
-# data_path = os.path.join('..', 'batse_data')
-#
-# burst_dict = {}
-# with open(os.path.join('data', 'burst_info.csv'), newline='') as f:
-#     for row in csv.DictReader(f, delimiter=','):
-#         burst_dict[str(row['burst_num'])] = row
-#
-# dur_dict = {}
-# with open(os.path.join('data', 'duration_table.csv'), newline='') as f:
-#     for row in csv.DictReader(f, delimiter=','):
-#         dur_dict[str(row['trig'])] = row
-#
-# background_file = open(os.path.join('data', 'background_table.csv'), 'w', newline='')
-# with background_file:
-#     header = ['burst_num', 'slope', 'intercept', 'r_value', 'p_value', 'std_err', 'min_time', 'max_time',
-#               'signal_to_noise']
-#     writer = csv.DictWriter(background_file, fieldnames=header)
-#     writer.writeheader()
-#
-#     for burst_num in dur_dict:
-#
-#         if burst_num in burst_dict:
-#
-#             # remove short bursts
-#             if (float(dur_dict[burst_num]['t90']) < 2) or (int(burst_dict[burst_num]['single_emission']) == 0):
-#                 next
-#             else:
-#
-#                 try:
-#                     burst_info = burst_dict[burst_num]
-#                     # burst_num,burst_path,single_emission
-#
-#                     file_path = os.path.join(data_path, burst_info['burst_file'])
-#
-#                     grb = BATSEBurst(file_path)
-#                     grb.parse_batse_file()
-#
-#                     burst_data = grb.sum_chan_data
-#                     header_names = grb.header_names.split()
-#                     header_data = grb.header_data.split()
-#
-#                     meta_dict = {}
-#                     for i in range(len(header_data)):
-#                         meta_dict[header_names[i]] = int(header_data[i])
-#
-#                     time = (np.arange(meta_dict['npts']) - meta_dict['nlasc']) * 0.064
-#
-#                     if float(dur_dict[burst_num]['t90']) < 4:
-#                         add_time = 8
-#                     else:
-#                         add_time = float(dur_dict[burst_num]['t90']) * add_time_mult
-#
-#                     try:
-#                         time_start = (float(dur_dict[burst_num]['t90_start']) - float(
-#                             dur_dict[burst_num]['t90_err']) - add_time)
-#                     except:
-#                         time_start = min(time) + ((dur_dict[burst_num]['t90_start'] - min(time)) / 2)
-#
-#                     try:
-#                         time_end = (float(dur_dict[burst_num]['t90_start']) + float(
-#                             dur_dict[burst_num]['t90']) + add_time + float(dur_dict[burst_num]['t90_err']))
-#                     except:
-#                         time_start = max(time) - ((max(time) - dur_dict[burst_num]['t90_end']) / 2)
-#
-#                     trimmed_background, trimmed_time = fix_background(burst_data, time, time_start, time_end, add_time)
-#
-#                     background_mean = np.mean(trimmed_background)
-#                     peak_flux = np.max(burst_data)
-#
-#                     signal_to_noise = (peak_flux - background_mean) / np.sqrt(peak_flux)
-#
-#                     # remove bursts with missing data
-#                     if min(trimmed_background) == 0:
-#                         next
-#                     else:
-#
-#                         slope, intercept, r_value, p_value, std_err = stats.linregress(trimmed_time, trimmed_background)
-#
-#                         if len(trimmed_time > 5):
-#
-#                             if str(slope) == 'nan':
-#                                 print(burst_num, 'slope = nan')
-#                             else:
-#                                 writer.writerow({
-#                                     'burst_num': burst_num,
-#                                     'slope': slope,
-#                                     'intercept': intercept,
-#                                     'r_value': r_value,
-#                                     'p_value': p_value,
-#                                     'std_err': std_err,
-#                                     'min_time': min(trimmed_time),
-#                                     'max_time': max(trimmed_time),
-#                                     'signal_to_noise': signal_to_noise
-#                                 })
-#                                 print(burst_num, 'success')
-#                         else:
-#                             print(burst_num, 'NOT enough points')
-#
-#                         # plt.plot(time,burst_data)
-#                         # plt.plot(trimmed_time,trimmed_background)
-#                         # plt.plot(time,burst_data-intercept-(time*slope))
-#                         # plt.show()
-#
-#                 except Exception as err:
-#                     print(burst_num, 'FAILURE - burst:', err)
-#                     next
+        burst_data['background'], c, x, x2 = fit_background(data=trimmed_data, time=burst_data['trig_time'])
+
+        plt.plot(burst_data['trig_time'], burst_data['sum_chan'], c='b')
+        plt.scatter(trimmed_data['trig_time'], trimmed_data['sum_chan'], c='r', marker='.')
+        plt.plot(burst_data['trig_time'], burst_data['background'], c='k')
+        if duration is not None:
+            plt.axvline(x=t90_start, color='g')
+            plt.axvline(x=t90_end, color='g')
+        plt.show()
+
+        return_data = {
+            'trig_num': trig_num,
+            'start_min_win': window_params['start_min_win'],
+            'start_max_win': window_params['start_max_win'],
+            'end_min_win': window_params['end_min_win'],
+            'end_max_win': window_params['end_max_win'],
+            'c': c,
+            'x': x,
+            'x2': x2,
+        }
+
+        if auto_save is True:
+            return return_data
+
+        save_input = input('save background calculations? (y/n): ')
+        if save_input.lower() == 'y':
+            return return_data
+        else:
+            for key, value in window_params.items():
+                raw_input = input(f'enter new {key} value (press Enter to leave the same): ')
+                if raw_input != '':
+                    window_params[key] = float(raw_input)

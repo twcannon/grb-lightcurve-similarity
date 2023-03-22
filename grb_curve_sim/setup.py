@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Usage: ETL_example.py (--experiment=<string>) (--data_dir=<string>) (--background_file)
+Usage: setup.py (--experiment=<string>) (--data_dir=<string>) (--background_file)
 
 Options:
   --experiment <string>         # experiment name. ex. batse
@@ -14,9 +14,11 @@ Options:
 import urllib.request
 import tarfile
 import os, sys
+import csv
 import configparser
 from grbpy.batse import BATSEDurations
 from batse_utils import calc_64ms_background
+from datetime import datetime
 
 config = configparser.ConfigParser()
 
@@ -78,11 +80,26 @@ def run_setup(experiment, data_dir, background_file):
         print(f'Building BATSE background file from {batse_duration_local_file}')
         durations = BATSEDurations(file_path=batse_duration_local_file)
         durations.parse_file()
+        cur_time = datetime.now().strftime("%Y%m%d%H%M%S")
+        bg_table_file_path = os.path.join(batse_local_dir, f'{cur_time}_background_table.csv')
+        field_names = ['trig_num', 'start_min_win', 'start_max_win', 'end_min_win', 'end_max_win', 'c', 'x', 'x2']
+
+        if not os.path.exists(bg_table_file_path):
+            with open(bg_table_file_path, 'a') as csv_file:
+                dict_object = csv.DictWriter(csv_file, fieldnames=field_names)
+                dict_object.writeheader()
+                csv_file.close()
+
         for burst in durations.dur_data['trig_num'].unique():
-            if int(burst) > 3115:
-                calc_64ms_background(file_path=os.path.join(batse_local_64ms_dir, f'cat64ms.{str(burst).zfill(5)}'),
-                                     duration=durations.dur_data.loc[durations.dur_data['trig_num'] == burst])
-            # sys.exit()
+            if int(burst) > 3001:
+                bg_dict = calc_64ms_background(
+                    file_path=os.path.join(batse_local_64ms_dir, f'cat64ms.{str(burst).zfill(5)}'),
+                    duration=durations.dur_data.loc[durations.dur_data['trig_num'] == burst], trig_num=burst)
+                if bg_dict is not None:
+                    with open(bg_table_file_path, 'a') as csv_file:
+                        dict_object = csv.DictWriter(csv_file, fieldnames=field_names)
+                        dict_object.writerow(bg_dict)
+                        csv_file.close()
 
     with open('grb_curve_sim.conf', 'w') as configfile:
         config.write(configfile)
